@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload and Download</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+        }
+        .image-container {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .image-item {
+            margin: 10px;
+            text-align: center;
+        }
+        img {
+            max-width: 150px;
+            max-height: 150px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Upload and Download</h1>
+    
+    <form id="uploadForm">
+        <input type="file" id="imageInput" accept="image/*" required>
+        <button type="submit">Upload Image</button>
+    </form>
+    
+    <div id="imageContainer" class="image-container"></div>
+
+    <script>
+        const imageContainer = document.getElementById('imageContainer');
+
+        // Load saved images from local storage on page load
+        window.onload = function() {
+            const images = JSON.parse(localStorage.getItem('uploadedImages')) || [];
+            images.forEach(displayImage);
+        };
+
+        // Handle image upload
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent form submission
+            
+            const fileInput = document.getElementById('imageInput');
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const imageData = e.target.result;
+
+                // Save to local storage
+                const images = JSON.parse(localStorage.getItem('uploadedImages')) || [];
+                images.push(imageData);
+                localStorage.setItem('uploadedImages', JSON.stringify(images));
+                
+                displayImage(imageData);
+            };
+            
+            if (file) {
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Function to display an image
+        function displayImage(imageData) {
+            const imageItem = document.createElement('div');
+            imageItem.className = 'image-item';
+
+            const img = document.createElement('img');
+            img.src = imageData;
+            img.alt = 'Uploaded Image';
+            
+            const downloadLink = document.createElement('a');
+            downloadLink.href = imageData;
+            downloadLink.download = 'downloaded_image';
+            downloadLink.innerText = 'Download';
+            downloadLink.style.display = 'block';
+
+            const removeButton = document.createElement('button');
+            removeButton.innerText = 'Remove';
+            removeButton.onclick = function() {
+                removeImage(imageData, imageItem);
+            };
+
+
+            imageItem.appendChild(img);
+            imageItem.appendChild(downloadLink);
+            imageContainer.appendChild(imageItem);   
+            imageItem.appendChild(removeButton);
+
+        }
+
+       // Function to remove an image
+        function removeImage(imageData, imageItem) {
+            // Remove image from local storage
+            let images = JSON.parse(localStorage.getItem('uploadedImages')) || [];
+            images = images.filter(img => img !== imageData); // Filter out the removed image
+            localStorage.setItem('uploadedImages', JSON.stringify(images));
+
+            // Remove the image item from the display
+            imageContainer.removeChild(imageItem);
+        }
+
+    </script>
+</body>
+</html>
